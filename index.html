@@ -1,0 +1,39 @@
+<!doctype html>
+<html ng-app="taskboard">
+  <head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>
+    <script src="https://raw.github.com/angular-ui/angular-ui/master/build/angular-ui.js"></script>
+  </head>
+  <body>
+    <div ng-controller="TaskController">
+      <ul ui-sortable ng-model="items">
+          <li ng-repeat="item in items">{{ item.name }}</li>
+      </ul>  
+      <hr>
+      <pre ng-bind="items | json"></pre>
+      </div>
+    </div>
+  </body>
+  <script type="text/javascript">
+    (function(){
+      
+      this.taskboard = angular.module('taskboard', ['ui']);
+
+      this.TaskController = function($scope) {
+        $scope.items = [
+          {name: 'First item'},
+          {name: 'Second item'},
+          {name: 'Third item'},
+        ];
+        return $scope.add = function() {
+          return $scope.items.push({
+            name: "New item"
+          });
+        };
+      };
+
+    }).call(this);
+  </script>
+</html>
