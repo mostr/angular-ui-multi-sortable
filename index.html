@@ -34,7 +34,7 @@
     </style>
   </head>
   <body ng-controller="TaskController">
-    <div ui-sortable ui-options="{connectWith: '.src', start: addStart, stop: addStop}" ng-model="items" model-subset="todo" class="src">
+    <div ui-sortable ng-model="items" model-subset="todo" class="src">
       <div class="item" ng-repeat="item in items.todo">
         <div ng:controller="SingleTask">
           <span ng:hide="editorEnabled" ng:click="enableEditor()">
@@ -49,11 +49,11 @@
       </div>
     </div>
     
-    <div ui-sortable ui-options="{connectWith: '.src'}" ng-model="items" model-subset="done" class="src">
+    <div ui-sortable ng-model="items" model-subset="done" class="src">
       <div class="item" ng-repeat="item in items.done">{{ item.name }}</div>
     </div>
 
-    <div ui-sortable ui-options="{connectWith: '.src'}" ng-model="items" model-subset="onhold" class="src">
+    <div ui-sortable ng-model="items" model-subset="onhold" class="src">
       <div class="item" ng-repeat="item in items.onhold">{{ item.name }}</div>
     </div>
 
@@ -63,6 +63,12 @@
   <script type="text/javascript">
     (function(){
       
+      angular.module('ui.config', []).value('ui.config', {
+        sortable: {
+          connectWith: '.src', 
+        }
+      });
+
       this.taskboard = angular.module('taskboard', ['ui']);
 
       this.TaskController = function($scope) {
