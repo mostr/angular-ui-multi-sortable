@@ -1042,21 +1042,32 @@ angular.module('ui.directives').directive('uiSortable', [
         origPosition: uiElement.item.data('ui-sortable-start'),
         destPosition: uiElement.item.index()
       };
-      this.isInternalUpdate = function() {
-        return this.data.origSubset === this.data.destSubset;
+      this.updateInternalModel = function(model) {
+        if(_isInternalUpdate() && _hasPositionChanged()) {
+          _manipulateModel(model);
+        }        
       }
-      this.hasPositionChanged = function() {
-        return (this.data.origPosition !== this.data.destPosition) || !this.isInternalUpdate();
+      this.updateCrossModel = function(model) {
+        _manipulateModel(model);
       }
-      this.updateModel = function(model) {
-        model[currentSubset].splice(end, 0, model[sourceSubset].splice(start, 1)[0]);
+
+      function _hasPositionChanged() {
+        return (self.data.origPosition !== self.data.destPosition) || !_isInternalUpdate();
       }
+      function _isInternalUpdate() {
+        return self.data.origSubset === self.data.destSubset;
+      }
+
+      function _manipulateModel(model) {
+        model[self.data.destSubset].splice(self.data.destPosition, 0, model[self.data.origSubset].splice(self.data.origPosition, 1)[0]);  
+      }
+
       function _debug() {
         console.log("--");
         console.log("Coordinates created: ");
         console.log(self.data);
-        console.log("internal update: " + self.isInternalUpdate());
-        console.log("position changed: " + self.hasPositionChanged());
+        console.log("internal update: " + _isInternalUpdate());
+        console.log("position changed: " + _hasPositionChanged());
         console.log("--");        
       }
       _debug();
@@ -1085,25 +1096,13 @@ angular.module('ui.directives').directive('uiSortable', [
             return scope.$apply();
           };
           opts.stop = function(e, ui) {
-            var end, start, sourceSubset, currentSubset;
-            sourceSubset = ui.item.data('ui-sortable-model-subset');
-            currentSubset = attrs.modelSubset;
-            start = ui.item.data('ui-sortable-start');
-            end = ui.item.index();
-            if(sourceSubset === currentSubset) {
-              ngModel.$modelValue[currentSubset].splice(end, 0, ngModel.$modelValue[sourceSubset].splice(start, 1)[0]);
-              return scope.$apply();              
-            }
+            var coords = new UpdateCoords(ui, attrs.modelSubset);
+            coords.updateInternalModel(ngModel.$modelValue);
+            return scope.$apply();              
           };
           opts.receive = function(e, ui) {
-            var start, end, source, subset, currentSubset;
-            sourceSubset = ui.item.data('ui-sortable-model-subset');
-            currentSubset = attrs.modelSubset;
-            start = ui.item.data('ui-sortable-start');
-            end = ui.item.index();
-            currentSubset = attrs.modelSubset;
-            ngModel.$modelValue[currentSubset].splice(end, 0, ngModel.$modelValue[sourceSubset].splice(start, 1)[0]);
-            return scope.$apply();
+            var coords = new UpdateCoords(ui, attrs.modelSubset);
+            coords.updateCrossModel(ngModel.$modelValue);
           };
         }
         return element.sortable(opts);
