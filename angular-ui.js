@@ -1033,6 +1033,35 @@ angular.module('ui.directives').directive('uiSortable', [
     if (uiConfig.sortable != null) {
       angular.extend(options, uiConfig.sortable);
     }
+
+    var UpdateCoords = function(uiElement, currentModelSubset) {
+      var self = this;
+      this.data = {
+        origSubset: uiElement.item.data('ui-sortable-model-subset'),
+        destSubset: currentModelSubset,
+        origPosition: uiElement.item.data('ui-sortable-start'),
+        destPosition: uiElement.item.index()
+      };
+      this.isInternalUpdate = function() {
+        return this.data.origSubset === this.data.destSubset;
+      }
+      this.hasPositionChanged = function() {
+        return (this.data.origPosition !== this.data.destPosition) || !this.isInternalUpdate();
+      }
+      this.updateModel = function(model) {
+        model[currentSubset].splice(end, 0, model[sourceSubset].splice(start, 1)[0]);
+      }
+      function _debug() {
+        console.log("--");
+        console.log("Coordinates created: ");
+        console.log(self.data);
+        console.log("internal update: " + self.isInternalUpdate());
+        console.log("position changed: " + self.hasPositionChanged());
+        console.log("--");        
+      }
+      _debug();
+    };
+
     return {
       require: '?ngModel',
       link: function(scope, element, attrs, ngModel) {
@@ -1062,7 +1091,7 @@ angular.module('ui.directives').directive('uiSortable', [
             start = ui.item.data('ui-sortable-start');
             end = ui.item.index();
             if(sourceSubset === currentSubset) {
-              ngModel.$modelValue[currentSubset].splice(end, 0, ngModel.$modelValue[currentSubset].splice(start, 1)[0]);
+              ngModel.$modelValue[currentSubset].splice(end, 0, ngModel.$modelValue[sourceSubset].splice(start, 1)[0]);
               return scope.$apply();              
             }
           };
