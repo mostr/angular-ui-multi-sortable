@@ -1039,30 +1039,10 @@ angular.module('ui.directives').directive('uiSortable', [
         var onStart, onUpdate, opts, _start, _update;
         opts = angular.extend({}, options, scope.$eval(attrs.uiOptions));
         if (ngModel != null) {
-          onStart = function(e, ui) {
-            ui.item.data('ui-sortable-source', ui.item.parent().attr('id'));
-            ui.item.data('ui-sortable-source-subset', attrs.modelSubset);
-            ui.item.data('ui-sortable-start', ui.item.index());
-            ui.item.data('ui-sortable-data', JSON.stringify(ngModel.$modelValue[attrs.modelSubset][ui.item.index()]));
-          };
-          onUpdate = function(e, ui) {
-            var end, start, source, currentSubset;
-            source = ui.item.data('ui-sortable-source');
-            start = ui.item.data('ui-sortable-start');
-            end = ui.item.index();
-            currentSubset = attrs.modelSubset;
-            if(source && source === ui.item.parent().attr('id')) {
-              console.log(source);
-              console.log(ui.item.parent().attr('id'));
-              console.log(start);
-              console.log(end);
-              ngModel.$modelValue[currentSubset].splice(end, 0, ngModel.$modelValue[currentSubset].splice(start, 1)[0]);
-              return scope.$apply();              
-            }
-          };
           _start = opts.start;
           opts.start = function(e, ui) {
-            onStart(e, ui);
+            ui.item.data('ui-sortable-model-subset', attrs.modelSubset);
+            ui.item.data('ui-sortable-start', ui.item.index());
             if (typeof _start === "function") {
               _start(e, ui);
             }
@@ -1070,20 +1050,30 @@ angular.module('ui.directives').directive('uiSortable', [
           };
           _update = opts.update;
           opts.update = function(e, ui) {
-            onUpdate(e, ui);
             if (typeof _update === "function") {
               _update(e, ui);
             }
             return scope.$apply();
           };
+          opts.stop = function(e, ui) {
+            var end, start, sourceSubset, currentSubset;
+            sourceSubset = ui.item.data('ui-sortable-model-subset');
+            currentSubset = attrs.modelSubset;
+            start = ui.item.data('ui-sortable-start');
+            end = ui.item.index();
+            if(sourceSubset === currentSubset) {
+              ngModel.$modelValue[currentSubset].splice(end, 0, ngModel.$modelValue[currentSubset].splice(start, 1)[0]);
+              return scope.$apply();              
+            }
+          };
           opts.receive = function(e, ui) {
             var start, end, source, subset, currentSubset;
-            source = ui.item.data('ui-sortable-source');
-            subset = ui.item.data('ui-sortable-source-subset');
+            sourceSubset = ui.item.data('ui-sortable-model-subset');
+            currentSubset = attrs.modelSubset;
             start = ui.item.data('ui-sortable-start');
             end = ui.item.index();
             currentSubset = attrs.modelSubset;
-            ngModel.$modelValue[currentSubset].splice(end, 0, ngModel.$modelValue[subset].splice(start, 1)[0]);
+            ngModel.$modelValue[currentSubset].splice(end, 0, ngModel.$modelValue[sourceSubset].splice(start, 1)[0]);
             return scope.$apply();
           };
         }
