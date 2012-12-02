@@ -27,7 +27,18 @@
   </head>
   <body ng-controller="TaskController">
     <div ui-sortable ui-options="{connectWith: '.src'}" ng-model="items" model-subset="todo" class="src">
-      <div class="item" ng-repeat="item in items.todo">{{ item.name }}</div>
+      <div class="item" ng-repeat="item in items.todo">
+        <div ng:controller="SingleTask">
+          <span ng:hide="editorEnabled" ng:click="enableEditor()">
+              {{item.name}}
+          </span>                    
+          <span ng:show="editorEnabled">
+              <input type="text" size="30" name="itemName" ng:required ng-model="itemName" />
+              <button ng:click="save()">Ok</button>
+              <button ng:click="disableEditor()">Cancel</button>
+          </span>
+        </div>
+      </div>
     </div>
     
     <div ui-sortable ui-options="{connectWith: '.src'}" ng-model="items" model-subset="done" class="src">
@@ -61,6 +72,25 @@
           onhold: []
         };
       };
+
+      this.SingleTask = function($scope) {
+          $scope.editorEnabled = false;
+
+          $scope.enableEditor = function() {
+              $scope.editorEnabled = true;
+              $scope.itemName = $scope.item.name;
+          },
+
+          $scope.disableEditor = function() {
+              $scope.editorEnabled = false;
+          },
+
+          $scope.save = function() {
+              $scope.item.name = $scope.itemName;
+              $scope.disableEditor();
+          }
+      }
+
 
     }).call(this);
   </script>
