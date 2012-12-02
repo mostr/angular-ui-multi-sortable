@@ -1034,19 +1034,35 @@ angular.module('ui.directives').directive('uiSortable', [
       angular.extend(options, uiConfig.sortable);
     }
 
-    var UpdateCoords = function(uiElement, currentModelSubset) {
+
+    var UpdateAction = function(uiElement, currentModelSubset) {
       var self = this;
-      this.data = {
-        origSubset: uiElement.item.data('ui-sortable-model-subset'),
-        destSubset: currentModelSubset,
-        origPosition: uiElement.item.data('ui-sortable-start'),
-        destPosition: uiElement.item.index()
-      };
+
+      // Set some data-* attributes on element being sorted just before sorting starts
+      this.appendDataOnStart = function() {
+        uiElement.item.data('ui-sortable-model-subset', currentModelSubset);
+        uiElement.item.data('ui-sortable-start', uiElement.item.index());        
+      }
+
+      // Build event data to use in "update", "stop" and other target callbacks
+      this.buildEventData = function() {
+        this.data = {
+          origSubset: uiElement.item.data('ui-sortable-model-subset'),
+          destSubset: currentModelSubset,
+          origPosition: uiElement.item.data('ui-sortable-start'),
+          destPosition: uiElement.item.index()
+        };
+        return this;
+      }      
+
+      // Update underlying model when elements sorted within one "sortable"
       this.updateInternalModel = function(model) {
         if(_isInternalUpdate() && _hasPositionChanged()) {
           _manipulateModel(model);
         }        
       }
+
+      // Update underlying model when elements sorted between different "sortables"
       this.updateCrossModel = function(model) {
         _manipulateModel(model);
       }
@@ -1057,53 +1073,50 @@ angular.module('ui.directives').directive('uiSortable', [
       function _isInternalUpdate() {
         return self.data.origSubset === self.data.destSubset;
       }
-
       function _manipulateModel(model) {
         model[self.data.destSubset].splice(self.data.destPosition, 0, model[self.data.origSubset].splice(self.data.origPosition, 1)[0]);  
       }
-
-      function _debug() {
-        console.log("--");
-        console.log("Coordinates created: ");
-        console.log(self.data);
-        console.log("internal update: " + _isInternalUpdate());
-        console.log("position changed: " + _hasPositionChanged());
-        console.log("--");        
-      }
-      _debug();
     };
 
     return {
       require: '?ngModel',
-      link: function(scope, element, attrs, ngModel) {
-        var onStart, onUpdate, opts, _start, _update;
-        opts = angular.extend({}, options, scope.$eval(attrs.uiOptions));
+      link: function(scope, element, attrs, ngModel) {        
+        var opts = angular.extend({}, options, scope.$eval(attrs.uiOptions));
         if (ngModel != null) {
-          _start = opts.start;
+          var _start = opts.start;
           opts.start = function(e, ui) {
-            ui.item.data('ui-sortable-model-subset', attrs.modelSubset);
-            ui.item.data('ui-sortable-start', ui.item.index());
-            if (typeof _start === "function") {
-              _start(e, ui);
-            }
+            new UpdateAction(ui, attrs.modelSubset).appendDataOnStart();
+            _callUserDefinedCallback(_start)(e, ui);
             return scope.$apply();
           };
-          _update = opts.update;
+
+          var _update = opts.update;
           opts.update = function(e, ui) {
-            if (typeof _update === "function") {
-              _update(e, ui);
-            }
+            _callUserDefinedCallback(_update)(e, ui);
             return scope.$apply();
           };
+
+          var _stop = opts.stop;
           opts.stop = function(e, ui) {
-            var coords = new UpdateCoords(ui, attrs.modelSubset);
-            coords.updateInternalModel(ngModel.$modelValue);
+            var action = new UpdateAction(ui, attrs.modelSubset).buildEventData();
+            action.updateInternalModel(ngModel.$modelValue);
+            _callUserDefinedCallback(_stop)(e, ui);
             return scope.$apply();              
           };
+
+          var _receive = opts.receive;
           opts.receive = function(e, ui) {
-            var coords = new UpdateCoords(ui, attrs.modelSubset);
-            coords.updateCrossModel(ngModel.$modelValue);
+            var action = new UpdateAction(ui, attrs.modelSubset).buildEventData();
+            action.updateCrossModel(ngModel.$modelValue);
+            _callUserDefinedCallback(_receive)(e, ui);
+            return scope.$apply();              
           };
+        }
+        function _callUserDefinedCallback(callback) {
+          if (typeof callback === "function") {
+            return callback;
+          }
+          return function() {};
         }
         return element.sortable(opts);
       }
