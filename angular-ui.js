@@ -1032,7 +1032,7 @@ angular.module('ui.directives').directive('uiSortable', ['ui.config', function(u
       angular.extend(options, uiConfig.sortable);
     }
 
-    var UpdateAction = function(uiElement, attrs) {
+    var ModelSynchronizer = function(uiElement, attrs) {
       var MODEL_SUBSET_ATTR = 'ui-sortable-model-subset';
       var INITIAL_POSITION_ATTR = 'ui-sortable-start-pos';
       var self = this;
@@ -1043,29 +1043,28 @@ angular.module('ui.directives').directive('uiSortable', ['ui.config', function(u
         uiElement.item.data(MODEL_SUBSET_ATTR, attrs.modelSubset);
       }
 
-      // Build event data to use in "update", "stop" and other target callbacks
-      this.buildEventData = function() {
-        this.data = {
-          origSubset: uiElement.item.data(MODEL_SUBSET_ATTR),
-          destSubset: attrs.modelSubset,
-          origPosition: uiElement.item.data(INITIAL_POSITION_ATTR),
-          destPosition: uiElement.item.index()
-        };
-        return this;
-      }      
-
       // Update underlying model when elements sorted within one "sortable"
-      this.updateInternalModel = function(model) {
+      this.updateSingleSortableModel = function(model) {
+        _collectDataRequiredForModelSync();
         if(_isInternalUpdate() && _hasPositionChanged()) {
           _update(model);
         }        
       }
 
       // Update underlying model when elements sorted between different "sortables"
-      this.updateCrossModel = function(model) {
+      this.updateMultiSortableModel = function(model) {
+        _collectDataRequiredForModelSync();
         _update(model);
       }
 
+      function _collectDataRequiredForModelSync() {
+        self.data = {
+          origSubset: uiElement.item.data(MODEL_SUBSET_ATTR),
+          destSubset: attrs.modelSubset,
+          origPosition: uiElement.item.data(INITIAL_POSITION_ATTR),
+          destPosition: uiElement.item.index()
+        };
+      }      
       function _hasPositionChanged() {
         return (self.data.origPosition !== self.data.destPosition) || !_isInternalUpdate();
       }
@@ -1087,7 +1086,7 @@ angular.module('ui.directives').directive('uiSortable', ['ui.config', function(u
         if (ngModel != null) {
           var _start = opts.start;
           opts.start = function(e, ui) {
-            new UpdateAction(ui, attrs).appendDataOnStart();
+            new ModelSynchronizer(ui, attrs).appendDataOnStart();
             _callUserDefinedCallback(_start)(e, ui);
             return scope.$apply();
           };
@@ -1100,16 +1099,16 @@ angular.module('ui.directives').directive('uiSortable', ['ui.config', function(u
 
           var _stop = opts.stop;
           opts.stop = function(e, ui) {
-            var action = new UpdateAction(ui, attrs).buildEventData();
-            action.updateInternalModel(ngModel.$modelValue);
+            var modelSync = new ModelSynchronizer(ui, attrs);
+            modelSync.updateSingleSortableModel(ngModel.$modelValue);
             _callUserDefinedCallback(_stop)(e, ui);
             return scope.$apply();              
           };
 
           var _receive = opts.receive;
           opts.receive = function(e, ui) {
-            var action = new UpdateAction(ui, attrs).buildEventData();
-            action.updateCrossModel(ngModel.$modelValue);
+            var modelSync = new ModelSynchronizer(ui, attrs);
+            modelSync.updateMultiSortableModel(ngModel.$modelValue);
             _callUserDefinedCallback(_receive)(e, ui);
             return scope.$apply();              
           };
