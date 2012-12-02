@@ -1026,30 +1026,29 @@ angular.module('ui.directives').directive('uiShow', [function () {
  @param [ui-sortable] {object} Options to pass to $.fn.sortable() merged onto ui.config
 */
 
-angular.module('ui.directives').directive('uiSortable', [
-  'ui.config', function(uiConfig) {
-    var options;
-    options = {};
+angular.module('ui.directives').directive('uiSortable', ['ui.config', function(uiConfig) {
+    var options = {};
     if (uiConfig.sortable != null) {
       angular.extend(options, uiConfig.sortable);
     }
 
-
-    var UpdateAction = function(uiElement, currentModelSubset) {
+    var UpdateAction = function(uiElement, attrs) {
+      var MODEL_SUBSET_ATTR = 'ui-sortable-model-subset';
+      var INITIAL_POSITION_ATTR = 'ui-sortable-start-pos';
       var self = this;
 
       // Set some data-* attributes on element being sorted just before sorting starts
       this.appendDataOnStart = function() {
-        uiElement.item.data('ui-sortable-model-subset', currentModelSubset);
-        uiElement.item.data('ui-sortable-start', uiElement.item.index());        
+        uiElement.item.data(INITIAL_POSITION_ATTR, uiElement.item.index());        
+        uiElement.item.data(MODEL_SUBSET_ATTR, attrs.modelSubset);
       }
 
       // Build event data to use in "update", "stop" and other target callbacks
       this.buildEventData = function() {
         this.data = {
-          origSubset: uiElement.item.data('ui-sortable-model-subset'),
-          destSubset: currentModelSubset,
-          origPosition: uiElement.item.data('ui-sortable-start'),
+          origSubset: uiElement.item.data(MODEL_SUBSET_ATTR),
+          destSubset: attrs.modelSubset,
+          origPosition: uiElement.item.data(INITIAL_POSITION_ATTR),
           destPosition: uiElement.item.index()
         };
         return this;
@@ -1058,22 +1057,25 @@ angular.module('ui.directives').directive('uiSortable', [
       // Update underlying model when elements sorted within one "sortable"
       this.updateInternalModel = function(model) {
         if(_isInternalUpdate() && _hasPositionChanged()) {
-          _manipulateModel(model);
+          _update(model);
         }        
       }
 
       // Update underlying model when elements sorted between different "sortables"
       this.updateCrossModel = function(model) {
-        _manipulateModel(model);
+        _update(model);
       }
 
       function _hasPositionChanged() {
         return (self.data.origPosition !== self.data.destPosition) || !_isInternalUpdate();
       }
       function _isInternalUpdate() {
-        return self.data.origSubset === self.data.destSubset;
+        return attrs.modelSubset === undefined || self.data.origSubset === self.data.destSubset;
       }
-      function _manipulateModel(model) {
+      function _update(model) {
+        if(attrs.modelSubset === undefined) {
+          model.splice(self.data.destPosition, 0, model.splice(self.data.origPosition, 1)[0]);    
+        }
         model[self.data.destSubset].splice(self.data.destPosition, 0, model[self.data.origSubset].splice(self.data.origPosition, 1)[0]);  
       }
     };
@@ -1085,7 +1087,7 @@ angular.module('ui.directives').directive('uiSortable', [
         if (ngModel != null) {
           var _start = opts.start;
           opts.start = function(e, ui) {
-            new UpdateAction(ui, attrs.modelSubset).appendDataOnStart();
+            new UpdateAction(ui, attrs).appendDataOnStart();
             _callUserDefinedCallback(_start)(e, ui);
             return scope.$apply();
           };
@@ -1098,7 +1100,7 @@ angular.module('ui.directives').directive('uiSortable', [
 
           var _stop = opts.stop;
           opts.stop = function(e, ui) {
-            var action = new UpdateAction(ui, attrs.modelSubset).buildEventData();
+            var action = new UpdateAction(ui, attrs).buildEventData();
             action.updateInternalModel(ngModel.$modelValue);
             _callUserDefinedCallback(_stop)(e, ui);
             return scope.$apply();              
@@ -1106,7 +1108,7 @@ angular.module('ui.directives').directive('uiSortable', [
 
           var _receive = opts.receive;
           opts.receive = function(e, ui) {
-            var action = new UpdateAction(ui, attrs.modelSubset).buildEventData();
+            var action = new UpdateAction(ui, attrs).buildEventData();
             action.updateCrossModel(ngModel.$modelValue);
             _callUserDefinedCallback(_receive)(e, ui);
             return scope.$apply();              
