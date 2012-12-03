@@ -54,8 +54,9 @@ angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', funct
       function _update(model) {
         if(attrs.modelSubset === undefined) {
           model.splice(self.data.destPosition, 0, model.splice(self.data.origPosition, 1)[0]);    
-        }
-        model[self.data.destSubset].splice(self.data.destPosition, 0, model[self.data.origSubset].splice(self.data.origPosition, 1)[0]);  
+        } else {
+		  model[self.data.destSubset].splice(self.data.destPosition, 0, model[self.data.origSubset].splice(self.data.origPosition, 1)[0]);  
+		}
       }
     };
 
