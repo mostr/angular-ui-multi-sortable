@@ -24,6 +24,14 @@ Suppose model (in AngularJS) is defined as follows
     };
 
 
+Define global `sortable` options that will be provided to underlying jQuery sortable plugin. Here we need to provide `connectWith` option to link several sortables together.
+
+	angular.module('ui.config', []).value('ui.config', {
+	  sortable: {
+		connectWith: '.column', 
+	  }
+	});
+	
 Define UI part as below, using `ui-multi-sortable` directive and `model-subset` attribute to point actual items' subset.
 
     <body ng-controller="TaskboardController">
