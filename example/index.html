@@ -20,6 +20,8 @@
       <div class="item" ng-repeat="item in items.onhold">{{ item.name }}</div>
     </div>
     <div style="clear: both"></div>
+    <span>Has underlying model changed? {{changed}}</span>
+    <div style="clear: both"></div>
     <pre ng-bind="items | json"></pre>
 
     <script type="text/javascript">
@@ -28,12 +30,15 @@
         angular.module('ui.config', []).value('ui.config', {
           sortable: {
             connectWith: '.column', 
+            update: 'itemsChanged',
           }
         });
 
         this.taskboard = angular.module('taskboard', ['ui']);
 
         this.TaskController = function($scope) {
+          $scope.changed = 'Unfortunately not';
+
           $scope.items = {
             todo: [
               {name: 'todo 1'},
@@ -47,6 +52,10 @@
             ],
             onhold: []
           };
+
+          $scope.itemsChanged = function() {
+            $scope.changed = 'Yes, of course :)';
+          }
 
         };
 

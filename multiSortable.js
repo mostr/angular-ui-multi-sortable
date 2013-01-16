@@ -95,10 +95,13 @@ angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', funct
           };
         }
         function _callUserDefinedCallback(callback) {
-          if (typeof callback === "function") {
-            return callback;
+          if (typeof callback === "function") {   
+            return callback; // regular callback
           }
-          return function() {};
+          if(typeof scope[callback] === "function") { 
+            return scope[callback]; // $scope function as callback
+          } 
+          return function() {}; // noop function
         }
         return element.sortable(opts);
       }
