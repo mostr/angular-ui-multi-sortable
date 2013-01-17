@@ -42,3 +42,15 @@ Define UI part as below, using `ui-multi-sortable` directive and `model-subset` 
             <div class="item" ng-repeat="item in items.done">{{ item.name }}</div>
         </div>
     </body>
+
+It is possible to hook up own callbacks into `update`, `start` and `stop` events in sortable. Callbacks can be either Angular `$scope` functions or regular functions (outside Angular context).
+To invoke `$scope` function, name of this function should be provided instead of function reference.
+Example of defining callbacks:
+
+	angular.module('ui.config', []).value('ui.config', {
+	  sortable: {
+		connectWith: '.column', 
+		update: 'changed',	// $scope function called 'changed' will be invoked within Angular context
+		start: function() { console.log('modification started');	// regular function will be invoked
+	  }
+	});
