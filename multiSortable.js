@@ -8,7 +8,7 @@
 
 angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', '$parse', function(uiConfig, $parse) {
     var options = {};
-    if (uiConfig.sortable != null) {
+    if (uiConfig.sortable !== null) {
       angular.extend(options, uiConfig.sortable);
     }
 
@@ -21,7 +21,7 @@ angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', '$par
       this.appendDataOnStart = function() {
         uiElement.item.data(INITIAL_POSITION_ATTR, uiElement.item.index());
         uiElement.item.data(MODEL_SUBSET_ATTR, attrs.modelSubset);
-      }
+      };
 
       // Update underlying model when elements sorted within one "sortable"
       this.updateSingleSortableModel = function(model) {
@@ -29,13 +29,13 @@ angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', '$par
         if(_isInternalUpdate() && _hasPositionChanged()) {
           _update(model);
         }
-      }
+      };
 
       // Update underlying model when elements sorted between different "sortables"
       this.updateMultiSortableModel = function(model) {
         _collectDataRequiredForModelSync();
         _update(model);
-      }
+      };
 
       function _collectDataRequiredForModelSync() {
         self.data = {
@@ -45,12 +45,15 @@ angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', '$par
           destPosition: uiElement.item.index()
         };
       }
+
       function _hasPositionChanged() {
         return (self.data.origPosition !== self.data.destPosition) || !_isInternalUpdate();
       }
+
       function _isInternalUpdate() {
         return attrs.modelSubset === undefined || self.data.origSubset === self.data.destSubset;
       }
+
       function _update(model) {
         if(attrs.modelSubset === undefined) {
           model.splice(self.data.destPosition, 0, model.splice(self.data.origPosition, 1)[0]);
@@ -64,7 +67,7 @@ angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', '$par
       require: '?ngModel',
       link: function(scope, element, attrs, ngModel) {
         var opts = angular.extend({}, options, scope.$eval(attrs.uiOptions));
-        if (ngModel != null) {
+        if (ngModel !== null) {
           var _start = opts.start;
           opts.start = function(e, ui) {
             new ModelSynchronizer(ui, attrs).appendDataOnStart();
