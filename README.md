@@ -43,6 +43,13 @@ Define UI part as below, using `ui-multi-sortable` directive and `model-subset` 
         </div>
     </body>
 
+`model-subset` can be more sophisticated expression that Angular can evaluate, e.g.:
+    
+    columns[{{ $index }}].items
+    
+See `example` directory for such use-case.
+
+
 It is possible to hook up own callbacks into `update`, `start` and `stop` events in sortable. Callbacks can be either Angular `$scope` functions or regular functions (outside Angular context).
 To invoke `$scope` function, name of this function should be provided instead of function reference.
 Example of defining callbacks:
