@@ -6,7 +6,7 @@
   @author: Michal Ostruszka (http://michalostruszka.pl)
 **/
 
-angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', function(uiConfig) {
+angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', '$parse', function(uiConfig, $parse) {
     var options = {};
     if (uiConfig.sortable != null) {
       angular.extend(options, uiConfig.sortable);
@@ -19,7 +19,7 @@ angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', funct
 
       // Set some data-* attributes on element being sorted just before sorting starts
       this.appendDataOnStart = function() {
-        uiElement.item.data(INITIAL_POSITION_ATTR, uiElement.item.index());        
+        uiElement.item.data(INITIAL_POSITION_ATTR, uiElement.item.index());
         uiElement.item.data(MODEL_SUBSET_ATTR, attrs.modelSubset);
       }
 
@@ -28,7 +28,7 @@ angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', funct
         _collectDataRequiredForModelSync();
         if(_isInternalUpdate() && _hasPositionChanged()) {
           _update(model);
-        }        
+        }
       }
 
       // Update underlying model when elements sorted between different "sortables"
@@ -44,7 +44,7 @@ angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', funct
           origPosition: uiElement.item.data(INITIAL_POSITION_ATTR),
           destPosition: uiElement.item.index()
         };
-      }      
+      }
       function _hasPositionChanged() {
         return (self.data.origPosition !== self.data.destPosition) || !_isInternalUpdate();
       }
@@ -53,16 +53,16 @@ angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', funct
       }
       function _update(model) {
         if(attrs.modelSubset === undefined) {
-          model.splice(self.data.destPosition, 0, model.splice(self.data.origPosition, 1)[0]);    
+          model.splice(self.data.destPosition, 0, model.splice(self.data.origPosition, 1)[0]);
         } else {
-		  model[self.data.destSubset].splice(self.data.destPosition, 0, model[self.data.origSubset].splice(self.data.origPosition, 1)[0]);  
-		}
+          ($parse(self.data.destSubset)(model)).splice(self.data.destPosition, 0, ($parse(self.data.origSubset)(model)).splice(self.data.origPosition, 1)[0]);
+        }
       }
     };
 
     return {
       require: '?ngModel',
-      link: function(scope, element, attrs, ngModel) {        
+      link: function(scope, element, attrs, ngModel) {
         var opts = angular.extend({}, options, scope.$eval(attrs.uiOptions));
         if (ngModel != null) {
           var _start = opts.start;
@@ -83,7 +83,7 @@ angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', funct
             var modelSync = new ModelSynchronizer(ui, attrs);
             modelSync.updateSingleSortableModel(ngModel.$modelValue);
             _callUserDefinedCallback(_stop)(e, ui);
-            return scope.$apply();              
+            return scope.$apply();
           };
 
           var _receive = opts.receive;
@@ -91,16 +91,16 @@ angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', funct
             var modelSync = new ModelSynchronizer(ui, attrs);
             modelSync.updateMultiSortableModel(ngModel.$modelValue);
             _callUserDefinedCallback(_receive)(e, ui);
-            return scope.$apply();              
+            return scope.$apply();
           };
         }
         function _callUserDefinedCallback(callback) {
-          if (typeof callback === "function") {   
+          if (typeof callback === "function") {
             return callback; // regular callback
           }
-          if(typeof scope[callback] === "function") { 
+          if(typeof scope[callback] === "function") {
             return scope[callback]; // $scope function as callback
-          } 
+          }
           return function() {}; // noop function
         }
         return element.sortable(opts);

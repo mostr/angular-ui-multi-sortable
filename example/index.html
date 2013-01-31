@@ -10,14 +10,11 @@
   </head>
 
   <body ng-controller="TaskController">
-    <div ui-multi-sortable ng-model="items" model-subset="todo" class="column">
-      <div class="item" ng-repeat="item in items.todo">{{ item.name }}</div>
-    </div>    
-    <div ui-multi-sortable ng-model="items" model-subset="done" class="column">
-      <div class="item" ng-repeat="item in items.done">{{ item.name }}</div>
-    </div>
-    <div ui-multi-sortable ng-model="items" model-subset="onhold" class="column">
-      <div class="item" ng-repeat="item in items.onhold">{{ item.name }}</div>
+    <div class="column-wrapper" ng-repeat="column in board.columns">
+      <div class="column-title">{{ column.name }}</div>
+      <div ui-multi-sortable ng-model="board" model-subset="columns[{{ $index }}].items" class="column">
+        <div class="item" ng-repeat="item in column.items">{{ item.name }}</div>
+      </div>
     </div>
     <div style="clear: both"></div>
     <span>Has underlying model changed? {{changed}}</span>
@@ -26,10 +23,10 @@
 
     <script type="text/javascript">
       (function(){
-        
+
         angular.module('ui.config', []).value('ui.config', {
           sortable: {
-            connectWith: '.column', 
+            connectWith: '.column',
             update: 'itemsChanged',
           }
         });
@@ -39,18 +36,26 @@
         this.TaskController = function($scope) {
           $scope.changed = 'Unfortunately not';
 
-          $scope.items = {
-            todo: [
-              {name: 'todo 1'},
-              {name: 'todo 2'},
-              {name: 'todo 3'},
-              {name: 'todo 4'}
-            ],
-            done: [
-              {name: 'done 1'},
-              {name: 'done 2'},
-            ],
-            onhold: []
+          $scope.board = {
+            columns: [
+              { name: 'todo',
+                items: [
+                  {name: 'todo 1'},
+                  {name: 'todo 2'},
+                  {name: 'todo 3'},
+                  {name: 'todo 4'}
+                ]
+              },
+              { name: 'done',
+                items: [
+                  {name: 'done 1'},
+                  {name: 'done 2'}
+                ]
+              },
+              { name: 'onhold',
+                items: []
+              }
+            ]
           };
 
           $scope.itemsChanged = function() {
