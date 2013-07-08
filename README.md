@@ -29,11 +29,12 @@ Suppose model (in AngularJS) is defined as follows
 
 Define global `sortable` options that will be provided to underlying jQuery sortable plugin. Here we need to provide `connectWith` option to link several sortables together.
 
-	angular.module('ui.config', []).value('ui.config', {
-	  sortable: {
-		connectWith: '.column', 
-	  }
-	});
+    angular.module('ui.sortable').value('uiSortableConfig', {
+      sortable: {
+        connectWith: '.column',
+        update: 'itemsChanged',
+      }
+    });
 	
 Define UI part as below, using `ui-multi-sortable` directive and `model-subset` attribute to point actual items' subset.
 
@@ -57,10 +58,22 @@ It is possible to hook up own callbacks into `update`, `start` and `stop` events
 To invoke `$scope` function, name of this function should be provided instead of function reference.
 Example of defining callbacks:
 
-	angular.module('ui.config', []).value('ui.config', {
+    angular.module('ui.sortable').value('uiSortableConfig', {
 	  sortable: {
 		connectWith: '.column', 
 		update: 'changed',	// $scope function called 'changed' will be invoked within Angular context
 		start: function() { console.log('modification started');	// regular function will be invoked
 	  }
 	});
+
+Changelog
+-----
+
+### 0.0.2
+
+First version of component. Works with older versions of Angular-UI components (before project was split)
+
+### 0.1.0
+
+Dependencies updated to `1.0.7`for AngularJS itself and `0.0.1` for angular-ui-sortable. This version isn't backward compatible due to changes in foundation components (angular-ui-sortable).
+        

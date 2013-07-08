@@ -6,7 +6,7 @@
   @author: Michal Ostruszka (http://michalostruszka.pl)
 **/
 
-angular.module('ui.directives').directive('uiMultiSortable', ['ui.config', '$parse', function(uiConfig, $parse) {
+angular.module('ui.sortable').directive('uiMultiSortable', ['uiSortableConfig', '$parse', function(uiConfig, $parse) {
     var options = {};
     if (uiConfig.sortable !== null) {
       angular.extend(options, uiConfig.sortable);
