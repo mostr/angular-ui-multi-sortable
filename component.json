@@ -1,8 +1,8 @@
 {
   "author": "Michal Ostruszka",
-  "name": "angular-ui-multi-sortba",
+  "name": "angular-ui-multi-sortable",
   "description": "Extension for Angular-UI sortable that adds ability to drag elements between different lists. Works with new angular-ui-sortable",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "homepage": "https://github.com/mostr/angular-ui-multi-sortable",
   "repository": {
     "type": "git",
