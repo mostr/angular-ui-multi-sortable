@@ -1,9 +1,11 @@
 AngularJS multi-sortable directive
 =======
 
-*Starting from version 0.0.2 this component is available via [Bower](http://twitter.github.io/bower/) package manager.*
+__This directive development will be discontinued which means it is usable only in Angular 1.x.
+If you are looking for Angular 1.2 compatible version, [Angular-UI](https://github.com/angular-ui/ui-sortable) `ui-sortable` directive does exactly the same thing.__
 
-*It hasn't been tested yet with newest Angular and Angular-UI so changes are it will not work correctly*
+
+*Starting from version 0.0.2 this component is available via [Bower](http://twitter.github.io/bower/) package manager.*
 
 This AngularJS directive allows effectively using JQuery UI sortable plugin with `connectWith` option giving ability to create portlet-like UIs.
 It was built partially on angular-ui-sortable "uiSortable" directive and it keeps its core functionality.
